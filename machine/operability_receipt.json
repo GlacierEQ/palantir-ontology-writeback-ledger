@@ -1,0 +1,27 @@
+{
+  "schema": "glaciereq.operability-receipt.v1",
+  "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+  "at": "2026-08-10T04:12Z",
+  "source_sha": "db136568bbe7c6586cdd018e1ad38b3866ac87409921ba8ff16a84d2fd330cf4",
+  "entry": "scripts/operate.py",
+  "primary_output": {
+    "module": "writeback_ledger",
+    "ok": true,
+    "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+    "smoke": {
+      "args": [
+        "'sample_object_type'",
+        "'sample_object_id'"
+      ],
+      "content_checked": true,
+      "invoked": true,
+      "kind": "class",
+      "method": "get",
+      "module_local": true,
+      "name": "OntologyWritebackLedger",
+      "result": "ObjectSnapshot(object_type='sample_object_type', object_id='sample_object_id', properties='sample_properties', schema_fingerprint='sample_schema_fingerprint')"
+    }
+  },
+  "dual_run_ok": true,
+  "result": "PASS"
+}

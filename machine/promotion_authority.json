@@ -1,0 +1,11 @@
+{
+  "schema": "glaciereq.promotion-authority-grant.v1",
+  "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+  "source_sha": "db136568bbe7c6586cdd018e1ad38b3866ac87409921ba8ff16a84d2fd330cf4",
+  "proof_receipt_digest": "9907ff67ae6f8da43e19f332010dbff4b07e1dac0bcc67098e621b3020f32938",
+  "not_after": 1788927149.234226,
+  "mac": "40ad3b274774a1b376ed4040b695d3ad4e0ed8243b40af775c7eaa40a9537b2c",
+  "issuer": "local_operator_promotion_authority",
+  "verified": true,
+  "secret_ref": "src/promotion_authority.py::LOCAL_OPERATOR_SECRET"
+}
