@@ -1,0 +1,50 @@
+{
+  "schema": "glaciereq.repo-canonical-position.v1",
+  "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+  "role": "CANONICAL_SPECIALIST",
+  "owns": "transactional_ontology_writeback",
+  "purpose": "Apply typed object diffs against exact known state with schema/base guards, sign-off, atomic rollback, reversible changes, and deterministic ledger receipts.",
+  "lineage": {
+    "good_implementation_commit": "d3bc776e22d1011015302e96a432104421c1924c",
+    "good_implementation_blob": "4639954800f01ed714daad78a0d3a485183ec3be",
+    "regression_commit": "bca7d82b7a5750a81424d49768079ca19a1fd0e2",
+    "regression": "SWARM automation truncated src/writeback_ledger.py after ObjectSnapshot while tests and higher-level truth surfaces still referenced the removed ledger implementation.",
+    "recovery": "Restore the proven ledger shape from pre-regression history, harden replay/schema/batch semantics, and re-run exact-head proof before canonical promotion."
+  },
+  "relationships": [
+    {
+      "repository": "GlacierEQ/palantir-action-lineage-graph",
+      "relationship": "REFERENCE_COMPLEMENT",
+      "provides": "causal action provenance and ancestry",
+      "integration_exercised": false
+    },
+    {
+      "repository": "GlacierEQ/palantir-object-authority-matrix",
+      "relationship": "REFERENCE_COMPLEMENT",
+      "provides": "actor/object-type/verb authorization decisions",
+      "integration_exercised": false
+    }
+  ],
+  "does_not_own": [
+    "action provenance DAG semantics",
+    "actor/object authorization policy",
+    "external provider mutation execution"
+  ],
+  "current_boundary": {
+    "state_storage": "in-memory reference implementation",
+    "authority": "declared authority metadata plus local sign-off policy; external authorization is not authenticated here",
+    "lineage": "ledger-parent hash only; external action-lineage integration is not exercised",
+    "persistence": "no external durable database or provider readback is claimed"
+  },
+  "next_evolution": [
+    "bind an upstream authority decision receipt to each writeback diff",
+    "bind an upstream action-lineage fingerprint to each writeback diff",
+    "add durable storage plus post-write canonical readback",
+    "preserve idempotent diff identity across process restarts"
+  ],
+  "nonclaims": [
+    "no Palantir affiliation, endorsement, employment, clearance, or proprietary access",
+    "no production Palantir ontology deployment",
+    "no exercised integration with sibling Palantir-lens repositories"
+  ]
+}
