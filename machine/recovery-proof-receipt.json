@@ -1,0 +1,43 @@
+{
+  "schema": "glaciereq.recovery-proof-receipt.v1",
+  "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+  "recovery": {
+    "regression_commit": "bca7d82b7a5750a81424d49768079ca19a1fd0e2",
+    "last_known_good_commit": "d3bc776e22d1011015302e96a432104421c1924c",
+    "last_known_good_blob": "4639954800f01ed714daad78a0d3a485183ec3be"
+  },
+  "tested_pr_head": "366b927b99a7094ebc446094f995c034f6e49ed5",
+  "tested_blobs": {
+    "src/writeback_ledger.py": "665b09b1ebfd90e7b1a8165601d2e8a74072546b",
+    "tests/test_writeback_ledger.py": "ef5bfd02b3d88da60ef6c662c7f9240c5652637a"
+  },
+  "github_actions": {
+    "workflow_run_id": 31385698942,
+    "job_id": 93445488906,
+    "result": "PASS",
+    "tests_observed": 27,
+    "python": "3.11.15",
+    "runner": "ubuntu-24.04"
+  },
+  "proved": [
+    "restored central writeback implementation is importable",
+    "schema drift refuses",
+    "current-state schema drift refuses",
+    "stale base refuses",
+    "parent mismatch refuses",
+    "configured sign-off is enforced",
+    "empty authority/proposer metadata refuses",
+    "one-shot diff identity rejects replay",
+    "malformed paths and excessive operations refuse",
+    "failed batch restores object state and retains refusal evidence",
+    "batch path does not silently refresh stale caller base",
+    "reverse diff can explicitly undo an applied mutation",
+    "canonical/lineage/capability truth contracts parse and pass"
+  ],
+  "limitations": [
+    "in-memory reference state only",
+    "external authority decisions are not authenticated by this repository",
+    "external action-lineage proofs are not consumed",
+    "no external provider or Palantir deployment was exercised"
+  ]
+}
