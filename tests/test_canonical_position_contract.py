@@ -14,6 +14,8 @@ def load(path: str):
 CANONICAL = load("machine/canonical-position.json")
 CAPABILITIES = load("machine/capabilities.json")
 TARGET = load("machine/target-contract.json")
+STATE = load("machine/excellence-state.json")
+RECOVERY = load("machine/recovery-proof-receipt.json")
 
 
 class CanonicalPositionContractTests(unittest.TestCase):
@@ -68,13 +70,34 @@ class CanonicalPositionContractTests(unittest.TestCase):
         self.assertIn("reverse_diff_undo", capabilities)
         self.assertIn("deterministic_ledger_receipts", capabilities)
 
-    def test_recovery_requires_exact_head_proof_before_state_advance(self):
-        self.assertEqual(TARGET["current"]["state"], "PROMOTED")
-        self.assertFalse(TARGET["current"]["tested"])
-        self.assertTrue(TARGET["current"]["recovery_pending_exact_head_proof"])
-        self.assertTrue(TARGET["promotion"]["require_exact_source_sha"])
+    def test_recovery_proof_is_bound_and_state_advanced(self):
+        self.assertEqual(TARGET["current"]["state"], "EVOLVING")
+        self.assertTrue(TARGET["current"]["tested"])
+        self.assertFalse(TARGET["current"]["recovery_pending_exact_head_proof"])
         self.assertEqual(
-            TARGET["promotion"]["next_gate"], "CANONICAL_POSITION_RESOLVED"
+            TARGET["current"]["implementation_proof_ref"],
+            "machine/recovery-proof-receipt.json",
+        )
+        self.assertEqual(RECOVERY["github_actions"]["tests_observed"], 27)
+        self.assertEqual(RECOVERY["github_actions"]["result"], "PASS")
+        self.assertEqual(
+            RECOVERY["tested_blobs"]["src/writeback_ledger.py"],
+            "665b09b1ebfd90e7b1a8165601d2e8a74072546b",
+        )
+        self.assertEqual(STATE["principal_state"], "EVOLVING")
+        self.assertEqual(
+            STATE["gates"]["CANONICAL_POSITION_RESOLVED"]["status"], "PASS"
+        )
+        self.assertTrue(TARGET["promotion"]["require_exact_source_sha"])
+
+    def test_history_advances_without_skipping_canonical(self):
+        tail = STATE["history"][-2:]
+        self.assertEqual(
+            [(item["from"], item["to"], item["gate"]) for item in tail],
+            [
+                ("PROMOTED", "CANONICAL", "CANONICAL_POSITION_RESOLVED"),
+                ("CANONICAL", "EVOLVING", "EVOLUTION_CURSOR_DEFINED"),
+            ],
         )
 
     def test_public_truth_boundary_is_explicit(self):
