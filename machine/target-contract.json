@@ -5,11 +5,12 @@
     "family": "transactional-writeback"
   },
   "current": {
-    "state": "PROMOTED",
+    "state": "EVOLVING",
     "implemented": true,
-    "tested": false,
+    "tested": true,
     "deployed": false,
-    "recovery_pending_exact_head_proof": true
+    "recovery_pending_exact_head_proof": false,
+    "implementation_proof_ref": "machine/recovery-proof-receipt.json"
   },
   "target": {
     "purpose": "Apply typed object diffs against exact known state through fail-closed transactional writeback with explicit sign-off, rollback, reverse diffs, and deterministic receipts.",
@@ -38,7 +39,7 @@
     "require_exact_source_sha": true,
     "require_receipt": true,
     "require_nonclaims": true,
-    "next_gate": "CANONICAL_POSITION_RESOLVED"
+    "next_gate": "EVOLUTION_CURSOR_DEFINED"
   },
   "relationships": {
     "palantir-action-lineage-graph": "REFERENCE_COMPLEMENT_NOT_INTEGRATED",
