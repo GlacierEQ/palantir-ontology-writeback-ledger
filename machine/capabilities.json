@@ -1,1 +1,24 @@
-{"capabilities": ["hyper-scaling"]}
+{
+  "schema": "glaciereq.repo-capabilities.v1",
+  "repository": "GlacierEQ/palantir-ontology-writeback-ledger",
+  "capabilities": [
+    "typed_object_snapshot_digest",
+    "schema_fingerprint_guard",
+    "stale_base_guard",
+    "ledger_parent_consistency_guard",
+    "dual_signoff_policy",
+    "top_level_diff_validation",
+    "one_shot_diff_identity",
+    "atomic_batch_rollback",
+    "batch_refusal_receipt",
+    "reverse_diff_undo",
+    "deterministic_ledger_receipts"
+  ],
+  "truth_boundary": "Repository-local in-memory transactional writeback reference mechanism. Authority is declared metadata plus local sign-off, not externally authenticated authorization. Action-lineage integration, external durable persistence, provider execution, and Palantir adoption are not claimed.",
+  "evidence": [
+    "src/writeback_ledger.py",
+    "tests/test_writeback_ledger.py",
+    "tests/test_adversarial.py",
+    "machine/canonical-position.json"
+  ]
+}
