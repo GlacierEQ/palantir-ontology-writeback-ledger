@@ -2,21 +2,53 @@
   "schema": "glaciereq.repo-target-contract.v1",
   "identity": {
     "repository_id": "GlacierEQ/palantir-ontology-writeback-ledger",
-    "family": "elite-estate"
+    "family": "transactional-writeback"
   },
   "current": {
     "state": "PROMOTED",
     "implemented": true,
-    "tested": true,
-    "deployed": false
+    "tested": false,
+    "deployed": false,
+    "recovery_pending_exact_head_proof": true
+  },
+  "target": {
+    "purpose": "Apply typed object diffs against exact known state through fail-closed transactional writeback with explicit sign-off, rollback, reverse diffs, and deterministic receipts.",
+    "central_bottleneck": "Consequential object mutations become unsafe when schema/base state, attempt identity, sign-off, transaction ancestry, rollback, or receipt truth can drift independently.",
+    "canonical_role": "transactional_ontology_writeback_specialist"
+  },
+  "invariants": [
+    "schema fingerprint must match the required schema",
+    "current object state must match the caller-bound base snapshot",
+    "writeback parent must match the current ledger tip",
+    "structurally valid diff ids are one-shot attempt identities",
+    "configured sign-off policy must pass before mutation",
+    "malformed operations refuse closed",
+    "failed batches restore every object mutation and preserve refusal evidence",
+    "undo is an explicit reverse diff rather than silent state rewind"
+  ],
+  "promotion": {
+    "required_tests": [
+      "unit",
+      "adversarial",
+      "replay",
+      "stale-state",
+      "atomic-batch-rollback",
+      "reverse-diff"
+    ],
+    "require_exact_source_sha": true,
+    "require_receipt": true,
+    "require_nonclaims": true,
+    "next_gate": "CANONICAL_POSITION_RESOLVED"
+  },
+  "relationships": {
+    "palantir-action-lineage-graph": "REFERENCE_COMPLEMENT_NOT_INTEGRATED",
+    "palantir-object-authority-matrix": "REFERENCE_COMPLEMENT_NOT_INTEGRATED"
   },
   "nonclaims": [
-    "no employer affiliation",
-    "no production deployment without receipt"
-  ],
-  "donor_plan": {
-    "mode": "none",
-    "donors": []
-  },
-  "frozen_at": "2026-08-10T04:12Z"
+    "no Palantir affiliation or proprietary access",
+    "no production ontology deployment",
+    "no external durable persistence",
+    "no authenticated external authority decision",
+    "no exercised action-lineage integration"
+  ]
 }
