@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone --quiet https://github.com/GlacierEQ/palantir-action-lineage-graph.git /tmp/action-lineage
-          git -C /tmp/action-lineage checkout --quiet 1f19f1de737d2c499027918a256978efdcc91aad
-          test "$(git -C /tmp/action-lineage rev-parse HEAD)" = "1f19f1de737d2c499027918a256978efdcc91aad"
+          git -C /tmp/action-lineage checkout --quiet 5c18d0032da281a2f737f7c5107bbbca669b1469
+          test "$(git -C /tmp/action-lineage rev-parse HEAD)" = "5c18d0032da281a2f737f7c5107bbbca669b1469"
       - name: Execute producer proof through consumer transaction
         run: python scripts/operate.py --lineage-repo /tmp/action-lineage
