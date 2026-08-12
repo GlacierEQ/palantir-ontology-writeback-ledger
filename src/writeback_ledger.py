@@ -1,9 +1,9 @@
 """Ontology writeback diff ledger — typed mutations with fail-closed apply.
 
-This repository owns the transactional writeback boundary only. It validates
-schema/base state, declared authority metadata, sign-off, operation shape,
-ledger-parent consistency, replay identity, atomic batches, and reverse diffs.
-It does not authenticate external authority or action-lineage provenance.
+This repository owns the transactional writeback boundary. It validates schema
+and base state, declared authority metadata, sign-off, operation shape, ledger
+parent consistency, replay identity, atomic batches, reverse diffs, and now an
+independently verifiable causal-lineage proof before authorized writeback.
 
 Independent reference only — no platform affiliation claimed.
 """
@@ -16,6 +16,11 @@ import threading
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Mapping, Sequence
+
+try:
+    from .lineage_proof import verify_lineage_writeback_proof
+except ImportError:
+    from lineage_proof import verify_lineage_writeback_proof
 
 
 def digest(obj: Any) -> str:
@@ -60,7 +65,7 @@ class ObjectSnapshot:
 @dataclass(frozen=True)
 class DiffOp:
     path: str
-    op: str  # set | delete
+    op: str
     value: Any = None
 
 
@@ -162,6 +167,57 @@ class OntologyWritebackLedger:
                 return f"BAD_PATH:{op.path}"
         return None
 
+    def _record_external_refusal_unlocked(self, diff: WritebackDiff, reason: str) -> LedgerEntry:
+        """Audit a rejected external proof without reserving the diff id or advancing tip."""
+        seq = len(self._entries) + 1
+        body = {
+            "seq": seq,
+            "status": ApplyStatus.REFUSED.value,
+            "refuse_reason": reason,
+            "diff": diff.fingerprint(),
+            "resulting": None,
+            "parent": self._tip,
+        }
+        entry = LedgerEntry(
+            seq=seq,
+            status=ApplyStatus.REFUSED,
+            refuse_reason=reason,
+            diff_fingerprint=diff.fingerprint(),
+            resulting_digest=None,
+            ledger_hash=digest(body),
+            object_key=diff.base.key(),
+        )
+        self._entries.append(entry)
+        return entry
+
+    def apply_authorized(
+        self,
+        diff: WritebackDiff,
+        lineage_proof: Mapping[str, Any],
+    ) -> LedgerEntry:
+        """Verify causal lineage, then execute the normal transactional write boundary.
+
+        A bad proof is audit-recorded but does not mutate the object, reserve the
+        diff id, or advance the ledger tip. A corrected proof may therefore retry
+        the same otherwise-valid immutable diff.
+        """
+        ok, reason = verify_lineage_writeback_proof(
+            lineage_proof,
+            object_type=diff.base.object_type,
+            object_id=diff.base.object_id,
+            diff_fingerprint=diff.fingerprint(),
+            proposed_by=diff.proposed_by,
+            authority=diff.authority,
+            schema_fingerprint=diff.base.schema_fingerprint,
+            parent_ledger_hash=diff.parent_ledger_hash,
+        )
+        if not ok:
+            with self._lock:
+                return self._record_external_refusal_unlocked(
+                    diff, f"LINEAGE_{reason or 'PROOF_REFUSED'}"
+                )
+        return self.apply(diff)
+
     def apply(self, diff: WritebackDiff) -> LedgerEntry:
         with self._lock:
             return self._apply_unlocked(diff)
@@ -175,8 +231,6 @@ class OntologyWritebackLedger:
         if reason is None and diff.diff_id in self._seen_diff_ids:
             reason = "DUPLICATE_DIFF_ID"
         elif reason is None:
-            # Immutable attempt identity: once a structurally valid diff id is seen,
-            # callers must use a new id for a materially different retry.
             self._seen_diff_ids.add(diff.diff_id)
 
             if diff.parent_ledger_hash != self._tip:
@@ -242,13 +296,7 @@ class OntologyWritebackLedger:
         return entry
 
     def apply_batch(self, diffs: Sequence[WritebackDiff]) -> list[LedgerEntry]:
-        """Apply a batch atomically or roll every object mutation back.
-
-        Each supplied base snapshot remains authoritative; the batch path must not
-        silently refresh stale caller state. Parent ledger hashes are rebound to
-        the transaction's evolving internal tip because intermediate hashes are
-        created inside the atomic batch.
-        """
+        """Apply a batch atomically or roll every object mutation back."""
         with self._lock:
             snapshot_objects = dict(self._objects)
             snapshot_tip = self._tip
@@ -273,9 +321,7 @@ class OntologyWritebackLedger:
                     self._tip = snapshot_tip
                     del self._entries[snapshot_entries_len:]
 
-                    batch_fingerprint = digest(
-                        {"batch": [d.fingerprint() for d in diffs]}
-                    )
+                    batch_fingerprint = digest({"batch": [d.fingerprint() for d in diffs]})
                     reason = f"BATCH_ROLLBACK:{entry.refuse_reason}"
                     seq = len(self._entries) + 1
                     body = {
@@ -299,10 +345,7 @@ class OntologyWritebackLedger:
                     return results
             return results
 
-    def reverse_diff(
-        self, applied: WritebackDiff, current: ObjectSnapshot
-    ) -> WritebackDiff:
-        """Build a reverse diff from an applied forward diff."""
+    def reverse_diff(self, applied: WritebackDiff, current: ObjectSnapshot) -> WritebackDiff:
         inverse_ops: list[DiffOp] = []
         base_props = dict(applied.base.properties)
         for op in reversed(applied.ops):

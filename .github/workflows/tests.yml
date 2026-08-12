@@ -1,21 +1,37 @@
 name: tests
-
 on:
   push:
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: unit and adversarial tests
+      - name: Unit and lineage-consumer tests
         run: python -m unittest discover -s tests -v
+
+  cross-repo-lineage-writeback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch exact accepted Action Lineage Graph producer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet https://github.com/GlacierEQ/palantir-action-lineage-graph.git /tmp/action-lineage
+          git -C /tmp/action-lineage checkout --quiet 1f19f1de737d2c499027918a256978efdcc91aad
+          test "$(git -C /tmp/action-lineage rev-parse HEAD)" = "1f19f1de737d2c499027918a256978efdcc91aad"
+      - name: Execute producer proof through consumer transaction
+        run: python scripts/operate.py --lineage-repo /tmp/action-lineage
