@@ -70,7 +70,7 @@ Producer contract: `GlacierEQ/palantir-action-lineage-graph`.
 The CI integration job clones the Action Lineage Graph at exact accepted commit:
 
 ```text
-1f19f1de737d2c499027918a256978efdcc91aad
+5c18d0032da281a2f737f7c5107bbbca669b1469
 ```
 
 It then:
@@ -88,7 +88,7 @@ Run the same integration locally:
 
 ```bash
 git clone https://github.com/GlacierEQ/palantir-action-lineage-graph.git /tmp/action-lineage
-git -C /tmp/action-lineage checkout 1f19f1de737d2c499027918a256978efdcc91aad
+git -C /tmp/action-lineage checkout 5c18d0032da281a2f737f7c5107bbbca669b1469
 python scripts/operate.py --lineage-repo /tmp/action-lineage
 ```
 
